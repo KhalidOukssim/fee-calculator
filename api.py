@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Form
 from pydantic import BaseModel, Field
 from justice_fees import LegalFeesCalculator,FraisJudiciaires, LegalFeesCalculator2, JudicialFeeCalculator
-from enum import Enum, f
+from enum import Enum
 
 
 class Fees(BaseModel):
@@ -63,24 +63,29 @@ class NantissementsParams(BaseModel):
     operation_type: NantissementsOperationType
     amount: float = 0
 
+@app.post("/fees_based_on_amount/", summary="Calculer les frais selon un montant", description="")
+def register_commerce(amount: float = Form(0.0)):
+    calculator = JudicialFeeCalculator()
+    calculator.calculate_fee_based_on_amount(amount)
+    return {"total": calculator.calculate_total()}
 
 @app.post("/register_commerce/", summary="Enregistrer une opération de commerce", description="Enregistre une opération de commerce et calcule les frais associés.")
 def register_commerce(operation_type: CommerceOperationType = Form(...), amount: float = Form(0.0)):
     calculator = LegalFeesCalculator2()
     calculator.register_commerce(operation_type.value, amount)
-    return {"total": calculator.total_fees()}
+    return {"total": calculator.calculate_total()}
 
 @app.post("/nantissements/", summary="Enregistrer une opération de nantissement", description="Enregistre une opération de nantissement et calcule les frais associés.")
 def nantissements(operation_type: NantissementsOperationType = Form(...), amount: float = Form(0.0)):
     calculator = LegalFeesCalculator2()
     calculator.nantissements(operation_type.value, amount)
-    return {"total": calculator.total_fees()}
+    return {"total": calculator.calculate_total()}
 
 @app.get("/droit_plaidoirie/", summary="Calculer le droit de plaidoirie", description="Calcule le droit de plaidoirie qui est fixe à 10 dirhams.")
 def droit_plaidoirie():
     calculator = LegalFeesCalculator2()
     calculator.droit_plaidoirie()
-    return {"total": calculator.total_fees()}
+    return {"total": calculator.calculate_total()}
 
 @app.post("/frais_judiciaires/", summary="Calculer les frais judiciaires", description="Calcule les frais judiciaires, y compris l'amende et la majoration en cas de retard.")
 def frais_judiciaires(montant_initial: float = Form(...), retard: bool = Form(False), mois_de_retard: int = Form(0)):

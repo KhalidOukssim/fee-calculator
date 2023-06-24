@@ -33,6 +33,7 @@ class JudicialFeeCalculator(LegalFeesCalculator):
 
     def calculate_fixed_fee(self, fee):
         self.total += fee
+        
     def calculate_fee_based_on_amount(self, amount):
         if 1000 <= amount <= 5000:
             self.calculate_fee(max(0.04 * amount, 50))
