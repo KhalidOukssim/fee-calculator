@@ -1,13 +1,56 @@
 class LegalFeesCalculator:
-
     def __init__(self):
-        self.reset()
-
-    def reset(self):
         self.total = 0
 
+    def calculate_fee(self, fee):
+        self.total += fee
+
+    def calculate_total(self):
+        return self.total
+
+
+class JudicialFeeCalculator(LegalFeesCalculator):
+
+    def calculate_fixed_fee(self, fee):
+        self.total += fee
+    def calculate_fee_based_on_amount(self, amount):
+        if 1000 <= amount <= 5000:
+            self.calculate_fee(max(0.04 * amount, 50))
+        elif 5001 <= amount <= 20000:
+            self.calculate_fee(max(0.025 * amount, 200))
+        elif amount > 20000:
+            self.calculate_fee(0.01 * amount + 300)
+
+    def calculate_proces_verbal_offers(self, amount):
+        self.calculate_fee(min(max(0.01 * amount, 50), 150))
+
+    def calculate_protest(self, amount):
+        self.calculate_fee(50 + 0.005 * amount)
+
+    def calculate_eviction_or_possession(self, days):
+        self.calculate_fee(50 * days)
+
+    def calculate_seizure_procedure(self, amount, is_executory_title=True, days=1):
+        fee = 50 if is_executory_title else 150
+        self.calculate_fee(fee * days)
+        if amount > 10000:
+            self.total *= 2
+
+    def calculate_faillite_liquidation(self, amount):
+        self.calculate_fee(0.1 * amount)
+
+    def calculate_administrations_judiciaires(self, revenues, actif_realise):
+        self.calculate_fee(0.1 * (revenues + actif_realise))
+
+    def calculate_ventes_publiques(self, price):
+        self.calculate_fee(0.1 * price)
+
+    def calculate_distributions(self, amount):
+        self.calculate_fee(0.05 * amount)
+
+
+class LegalFeesCalculator2(LegalFeesCalculator):
     def register_commerce(self, operation_type, amount=0):
-        # Définir les frais en fonction du type d'opération
         fees_dict = {
             'immatriculation': 150,
             'delivrance_copie': 20,
@@ -20,7 +63,7 @@ class LegalFeesCalculator:
             'radiation_inscription': 50,
             'radiation_office': 0
         }
-        self.total += fees_dict[operation_type]
+        self.calculate_fee(fees_dict[operation_type])
 
     def nantissements(self, operation_type, amount=0):
         fees_dict = {
@@ -38,14 +81,11 @@ class LegalFeesCalculator:
             'renouvellement_inscription': 0.005 * amount,  # 0,50 %
             'nantissement_credit_agricole': 0
         }
-        self.total += fees_dict[operation_type]
+        self.calculate_fee(fees_dict[operation_type])
 
     def droit_plaidoirie(self, amount=0):
         # Le droit de plaidoirie est fixe à 10 dirhams
-        self.total += 10
-
-    def total_fees(self):
-        return self.total
+        self.calculate_fee(10)
 
 
 class FraisJudiciaires:
@@ -66,19 +106,6 @@ class FraisJudiciaires:
     def calculer_majoration(self):
         majoration = 0.05 * self.montant_initial  # 5% pour le premier mois
         if self.mois_de_retard > 1:
-            majoration += (self.mois_de_retard - 1) * 0.005 * self.montant_initial  # 0.50% pour chaque
-            # mois supplémentaire
+            majoration += (self.mois_de_retard - 1) * 0.005 * self.montant_initial  # 0.50% for each additional month
         return majoration
 
-
-# Exemple d'utilisation
-calculator = LegalFeesCalculator()
-calculator.register_commerce('immatriculation')
-calculator.nantissements('inscription_creance', amount=10000)
-calculator.droit_plaidoirie()
-print(f"le total des frais calculés: {calculator.total_fees()} dirhams.")  # Doit afficher le total des frais calculés
-
-
-# Pour un acte avec un montant initial de 1000 dirhams, payé avec un retard de 3 mois
-acte = FraisJudiciaires(1000, retard=True, mois_de_retard=3)
-print(f"Les frais totaux pour cet acte sont : {acte.calculer_frais()} dirhams.")
