@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Form
 from pydantic import BaseModel, Field
-from justice_fees import LegalFeesCalculator,FraisJudiciaires, LegalFeesCalculator2
-from enum import Enum
+from justice_fees import LegalFeesCalculator,FraisJudiciaires, LegalFeesCalculator2, JudicialFeeCalculator
+from enum import Enum, f
 
 
 class Fees(BaseModel):
